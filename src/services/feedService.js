@@ -21,6 +21,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '../firebase'
+import { publishUpdate } from '../lib/publishUpdate'
 
 const COLLECTION = 'feed_posts'
 const colRef = db ? collection(db, COLLECTION) : null
@@ -37,6 +38,7 @@ export async function createFeedPost(data) {
     updatedAt:   serverTimestamp(),
   }
   const ref = await addDoc(colRef, payload)
+  publishUpdate(db).catch(() => {})
   return ref.id
 }
 
@@ -67,9 +69,11 @@ export async function getFeedPost(id) {
 export async function updateFeedPost(id, patch) {
   const ref = doc(db, COLLECTION, id)
   await updateDoc(ref, { ...patch, updatedAt: serverTimestamp() })
+  publishUpdate(db).catch(() => {})
 }
 
 export async function deleteFeedPost(id) {
   const ref = doc(db, COLLECTION, id)
   await deleteDoc(ref)
+  publishUpdate(db).catch(() => {})
 }

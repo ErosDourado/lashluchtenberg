@@ -24,6 +24,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '../firebase'
+import { publishUpdate } from '../lib/publishUpdate'
 
 const COLLECTION = 'products'
 const colRef = db ? collection(db, COLLECTION) : null
@@ -44,6 +45,7 @@ export async function createProduct(data) {
     updatedAt:   serverTimestamp(),
   }
   const ref = await addDoc(colRef, payload)
+  publishUpdate(db).catch(() => {})
   return ref.id
 }
 
@@ -78,6 +80,7 @@ export async function getProduct(id) {
 export async function updateProduct(id, patch) {
   const ref = doc(db, COLLECTION, id)
   await updateDoc(ref, { ...patch, updatedAt: serverTimestamp() })
+  publishUpdate(db).catch(() => {})
 }
 
 /** Helper: alternar disponibilidade. */
@@ -89,4 +92,5 @@ export async function toggleProductStock(id, currentInStock) {
 export async function deleteProduct(id) {
   const ref = doc(db, COLLECTION, id)
   await deleteDoc(ref)
+  publishUpdate(db).catch(() => {})
 }
