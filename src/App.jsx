@@ -195,7 +195,7 @@ function AppRouter() {
               <div
                 key={id}
                 className="absolute inset-0 overflow-y-auto overflow-x-hidden pb-32"
-                style={{ visibility: visible ? 'visible' : 'hidden' }}
+                style={{ display: visible ? 'block' : 'none' }}
               >
                 <ErrorBoundary key={id} onNavigate={navigate}>
                   <P onNavigate={navigate} pageState={activePage === id ? pageState : null} />
