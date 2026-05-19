@@ -58,9 +58,9 @@ export default function TopBar({ onNavigate }) {
         <div />
 
         {/* Logo / nome — centralizada */}
-        <div className="flex justify-center">
+        <div className="flex justify-center items-center">
           {themeConfig.logoUrl ? (
-            <img src={themeConfig.logoUrl} alt={themeConfig.appName} className="h-10 object-contain" />
+            <img src={themeConfig.logoUrl} alt={themeConfig.appName} className="max-h-10 w-auto object-contain" />
           ) : (
             <p className="font-heading text-[17px] font-bold text-label tracking-tight leading-none text-center">
               {themeConfig.appName}
