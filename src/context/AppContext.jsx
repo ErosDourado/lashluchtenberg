@@ -516,7 +516,6 @@ export function AppProvider({ children }) {
   }
 
   // ── Auth admin ────────────────────────────────────────────────
-  const loginAdmin  = (pin) => { if (pin === brandConfig.adminPin) { setIsAdmin(true); return true } return false }
   const logoutAdmin = async () => {
     if (firebaseOn) {
       try { await authSignOut() } catch {}
@@ -617,7 +616,7 @@ export function AppProvider({ children }) {
       addToCart, removeFromCart, updateCartQty, clearCart,
       setWorkingHours,
       resolveImage, registerImage, unregisterImage,
-      loginAdmin, logoutAdmin,
+      logoutAdmin,
     }}>
       {children}
     </AppContext.Provider>

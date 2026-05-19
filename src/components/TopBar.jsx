@@ -5,7 +5,7 @@ import { themeConfig } from '../themeConfig'
 import { useApp } from '../context/AppContext'
 
 export default function TopBar({ onNavigate }) {
-  const { isAdmin, currentUser, firebaseOn, logoutAdmin, loginAdmin, cart, amIVip } = useApp()
+  const { isAdmin, currentUser, firebaseOn, logoutAdmin, cart, amIVip } = useApp()
   const cartQty = cart.reduce((s, i) => s + i.qty, 0)
   const [open, setOpen] = useState(false)
 

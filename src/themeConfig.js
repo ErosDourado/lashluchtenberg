@@ -50,8 +50,6 @@ export const themeConfig = {
     openingHours: 'Seg–Sáb  9h – 19h',
   },
 
-  // ─── ACESSO ADMIN ──────────────────────────────────────────────
-  adminPin: '1234',
 }
 
 // ─── Re-export legado (compat com brandConfig) ───────────────────
