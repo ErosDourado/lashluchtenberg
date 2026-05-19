@@ -100,6 +100,9 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (!firebaseOn) return
 
+    // Timeout de segurança: se após 6s as coleções não emitirem, libera o app mesmo assim
+    const fallback = setTimeout(() => setDataLoaded(true), 6000)
+
     // Conjunto para rastrear quais coleções já emitiram o primeiro dado
     const critical = new Set(['services', 'products', 'banners', 'feed', 'procedures', 'gallery', 'links'])
     const emitted = new Set()
@@ -107,6 +110,7 @@ export function AppProvider({ children }) {
     const checkReady = (key) => {
       emitted.add(key)
       if (emitted.size >= critical.size) {
+        clearTimeout(fallback)
         setTimeout(() => setDataLoaded(true), 400)
       }
     }
@@ -124,7 +128,7 @@ export function AppProvider({ children }) {
       subscribeWaitlist(setWaitlist,     e => console.error('[ctx] waitlist:', e)),
       subscribeUsuarios(setUsuarios,     e => console.error('[ctx] usuarios:', e)),
     ]
-    return () => unsubs.forEach(u => u())
+    return () => { clearTimeout(fallback); unsubs.forEach(u => u()) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firebaseOn])
 

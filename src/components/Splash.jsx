@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { brandConfig } from '../brandConfig'
+import { themeConfig } from '../themeConfig'
 
 export default function Splash() {
   return (
@@ -16,18 +17,23 @@ export default function Splash() {
         transition={{ duration: 0.8, ease: 'easeOut' }}
         className="flex flex-col items-center gap-6"
       >
-        {/* Logo ou Iniciais */}
-        <div 
-          className="w-24 h-24 rounded-[28px] flex items-center justify-center shadow-2xl"
-          style={{ background: 'var(--color-surface)', border: '1px solid rgba(0,0,0,0.05)' }}
-        >
-          <span 
-            className="text-[32px] font-black tracking-tighter"
-            style={{ color: 'var(--color-accent)' }}
+        {/* Logo */}
+        {themeConfig.logoUrl ? (
+          <img
+            src={themeConfig.logoUrl}
+            alt={brandConfig.studioName}
+            className="w-48 object-contain"
+          />
+        ) : (
+          <div
+            className="w-24 h-24 rounded-[28px] flex items-center justify-center shadow-2xl"
+            style={{ background: 'var(--color-surface)', border: '1px solid rgba(0,0,0,0.05)' }}
           >
-            {brandConfig.studioName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-          </span>
-        </div>
+            <span className="text-[32px] font-black tracking-tighter" style={{ color: 'var(--color-accent)' }}>
+              {brandConfig.studioName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+            </span>
+          </div>
+        )}
 
         <div className="flex flex-col items-center gap-2">
           <h1 
