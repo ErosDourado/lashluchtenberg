@@ -53,14 +53,14 @@ export default function TopBar({ onNavigate }) {
         paddingTop: 'env(safe-area-inset-top, 0px)',
       }}
     >
-      <div className="grid grid-cols-[80px_1fr_80px] items-center px-4 md:px-8 h-14 max-w-7xl mx-auto w-full">
+      <div className="grid grid-cols-[80px_1fr_80px] items-center px-4 md:px-8 h-20 max-w-7xl mx-auto w-full">
         {/* Spacer esquerdo — mesma largura da direita pra logo ficar centralizada */}
         <div />
 
         {/* Logo / nome — centralizada */}
         <div className="flex justify-center items-center">
           {themeConfig.logoUrl ? (
-            <img src={themeConfig.logoUrl} alt={themeConfig.appName} className="max-h-10 w-auto object-contain" />
+            <img src={themeConfig.logoUrl} alt={themeConfig.appName} className="max-h-16 w-auto object-contain" />
           ) : (
             <p className="font-heading text-[17px] font-bold text-label tracking-tight leading-none text-center">
               {themeConfig.appName}
