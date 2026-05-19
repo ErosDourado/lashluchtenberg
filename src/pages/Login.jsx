@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, Lock, User, Phone, Cake, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react'
+import { Mail, Lock, User, Phone, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react'
 import { signIn, signUp, friendlyAuthError } from '../services/authService'
 import { themeConfig } from '../themeConfig'
 
@@ -148,14 +148,14 @@ export default function Login({ onNavigate, pageState }) {
                     Aniversário
                   </span>
                   <div className="relative">
-                    <Cake size={14} strokeWidth={1.75} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-label-3" />
                     <input
                       type="date"
                       value={birthday}
                       onChange={e => setBirthday(e.target.value)}
+                      min="1900-01-01"
                       max={new Date().toISOString().split('T')[0]}
-                      className="w-full rounded-xl px-4 py-3 pl-9 text-[14px] focus:outline-none transition-colors"
-                      style={{ border: '1px solid rgba(60,60,67,0.18)' }}
+                      className="w-full rounded-xl px-4 py-3 text-[14px] focus:outline-none transition-colors"
+                      style={{ border: '1px solid rgba(60,60,67,0.18)', colorScheme: 'light' }}
                     />
                   </div>
                 </label>
