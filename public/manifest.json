@@ -1,9 +1,9 @@
 {
   "name": "Lash Luchtenberg",
-  "short_name": "Lash",
+  "short_name": "Lash Luchtenberg",
   "description": "Agendamento e produtos — Lash Luchtenberg",
-  "theme_color": "#C9A96E",
-  "background_color": "#F7F3EE",
+  "theme_color": "#FFFFFF",
+  "background_color": "#FFFFFF",
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
@@ -16,7 +16,7 @@
       "purpose": "any"
     },
     {
-      "src": "/icons/icon.svg",
+      "src": "/icons/icon-maskable.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "maskable"
