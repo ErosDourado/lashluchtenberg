@@ -4,12 +4,17 @@ import { Mail, Lock, User, Phone, Eye, EyeOff, ArrowRight, AlertCircle } from 'l
 import { signIn, signUp, friendlyAuthError } from '../services/authService'
 import { themeConfig } from '../themeConfig'
 
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+const ANOS  = Array.from({ length: 2026 - 1950 + 1 }, (_, i) => 2026 - i)
+
 export default function Login({ onNavigate, pageState }) {
   const [mode,    setMode]    = useState('login') // 'login' | 'signup'
   const [name,    setName]    = useState('')
   const [email,   setEmail]   = useState('')
   const [phone,   setPhone]   = useState('')
-  const [birthday, setBirthday] = useState('')
+  const [bDay,   setBDay]   = useState('')
+  const [bMonth, setBMonth] = useState('')
+  const [bYear,  setBYear]  = useState('')
   const [pass,    setPass]    = useState('')
   const [showPw,  setShowPw]  = useState(false)
   const [loading, setLoading] = useState(false)
@@ -25,14 +30,21 @@ export default function Login({ onNavigate, pageState }) {
   }
   const phoneDigits = phone.replace(/\D/g, '')
 
-  // Birthday válido: data no passado e usuário tem pelo menos 1 ano de idade
+  // Monta birthday string e valida
   const birthdayValid = (() => {
-    if (!birthday) return false
-    const d = new Date(birthday + 'T12:00:00')
+    if (!bDay || !bMonth || !bYear) return false
+    const mm = String(bMonth).padStart(2, '0')
+    const dd = String(bDay).padStart(2, '0')
+    const dateStr = `${bYear}-${mm}-${dd}`
+    const d = new Date(dateStr + 'T12:00:00')
     if (isNaN(d.getTime())) return false
-    const now = new Date()
-    return d < now && d.getFullYear() > 1900
+    return d < new Date()
   })()
+
+  // Sincroniza birthday string quando os três campos mudam
+  const computedBirthday = (bDay && bMonth && bYear)
+    ? `${bYear}-${String(bMonth).padStart(2,'0')}-${String(bDay).padStart(2,'0')}`
+    : ''
 
   // Pra onde voltar após login (admin / finance / home)
   const redirectTo = pageState?.redirectTo || 'home'
@@ -54,7 +66,7 @@ export default function Login({ onNavigate, pageState }) {
     setError('')
     try {
       if (isSignup) {
-        await signUp(email.trim(), pass, name.trim(), phoneDigits, birthday)
+        await signUp(email.trim(), pass, name.trim(), phoneDigits, computedBirthday)
       } else {
         await signIn(email.trim(), pass)
       }
@@ -147,16 +159,43 @@ export default function Login({ onNavigate, pageState }) {
                   <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(60,60,67,0.55)' }}>
                     Aniversário
                   </span>
-                  <div className="relative">
-                    <input
-                      type="date"
-                      value={birthday}
-                      onChange={e => setBirthday(e.target.value)}
-                      min="1900-01-01"
-                      max={new Date().toISOString().split('T')[0]}
-                      className="w-full rounded-xl px-4 py-3 text-[14px] focus:outline-none transition-colors"
-                      style={{ border: '1px solid rgba(60,60,67,0.18)', colorScheme: 'light' }}
-                    />
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* Dia */}
+                    <select
+                      value={bDay}
+                      onChange={e => setBDay(e.target.value)}
+                      className="rounded-xl px-3 py-3 text-[14px] focus:outline-none bg-white"
+                      style={{ border: '1px solid rgba(60,60,67,0.18)', color: bDay ? '#1D1D1F' : 'rgba(60,60,67,0.35)' }}
+                    >
+                      <option value="">Dia</option>
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                    {/* Mês */}
+                    <select
+                      value={bMonth}
+                      onChange={e => setBMonth(e.target.value)}
+                      className="rounded-xl px-3 py-3 text-[14px] focus:outline-none bg-white"
+                      style={{ border: '1px solid rgba(60,60,67,0.18)', color: bMonth ? '#1D1D1F' : 'rgba(60,60,67,0.35)' }}
+                    >
+                      <option value="">Mês</option>
+                      {MESES.map((m, i) => (
+                        <option key={i} value={i + 1}>{m}</option>
+                      ))}
+                    </select>
+                    {/* Ano */}
+                    <select
+                      value={bYear}
+                      onChange={e => setBYear(e.target.value)}
+                      className="rounded-xl px-3 py-3 text-[14px] focus:outline-none bg-white"
+                      style={{ border: '1px solid rgba(60,60,67,0.18)', color: bYear ? '#1D1D1F' : 'rgba(60,60,67,0.35)' }}
+                    >
+                      <option value="">Ano</option>
+                      {ANOS.map(a => (
+                        <option key={a} value={a}>{a}</option>
+                      ))}
+                    </select>
                   </div>
                 </label>
               </motion.div>

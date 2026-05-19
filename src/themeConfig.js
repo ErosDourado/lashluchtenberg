@@ -11,8 +11,8 @@
 
 export const themeConfig = {
   // ─── IDENTIDADE ─────────────────────────────────────────────────
-  appName:    'Studio Belle',
-  tagline:    'Beauty & Wellness',
+  appName:    'Lash Luchtenberg',
+  tagline:    'Realce seu olhar',
   logoUrl:    '/icons/logo.png',
 
   // ─── PALETA ─────────────────────────────────────────────────────
