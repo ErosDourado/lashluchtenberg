@@ -1,55 +1,68 @@
 import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, Phone, Cake, ArrowRight, Sparkles } from 'lucide-react'
+import { User, Phone, ArrowRight, Sparkles } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 
-// Modal bloqueante exibido quando o usuário logado tem cadastro incompleto.
-// Pede nome, telefone e/ou aniversário — apenas os campos faltantes.
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+const ANOS  = Array.from({ length: 2026 - 1950 + 1 }, (_, i) => 2026 - i)
+
 export default function CompleteProfileModal() {
   const { currentUser, usuarios, profile, setProfile, dataLoaded, firebaseOn } = useApp()
 
-  // Busca o doc do usuário atual em `usuarios` pelo email
   const myDoc = useMemo(() => {
     const email = (currentUser?.email || '').trim().toLowerCase()
     if (!email) return null
     return usuarios.find(u => (u.email || '').trim().toLowerCase() === email) || null
   }, [usuarios, currentUser])
 
-  // Determina o que está faltando, combinando dados do Firestore com profile local
   const missing = useMemo(() => {
     if (!currentUser || !firebaseOn || !dataLoaded) return null
     const name     = (myDoc?.name     || profile.name     || currentUser.displayName || '').trim()
     const phone    = (myDoc?.phone    || profile.phone    || '').replace(/\D/g, '')
     const birthday = (myDoc?.birthday || profile.birthday || '').trim()
     const out = []
-    if (!name)               out.push('name')
-    if (phone.length < 10)   out.push('phone')
-    if (!birthday)           out.push('birthday')
+    if (!name)             out.push('name')
+    if (phone.length < 10) out.push('phone')
+    if (!birthday)         out.push('birthday')
     return out
   }, [myDoc, profile, currentUser, firebaseOn, dataLoaded])
 
   const open = !!(missing && missing.length > 0)
 
-  // Form local
-  const [name, setName]         = useState('')
-  const [phoneIn, setPhoneIn]   = useState('')
-  const [birthdayIn, setBirthdayIn] = useState('')
-  const [saving, setSaving]     = useState(false)
+  const [name, setName]       = useState('')
+  const [phoneIn, setPhoneIn] = useState('')
+  const [bDay,   setBDay]   = useState('')
+  const [bMonth, setBMonth] = useState('')
+  const [bYear,  setBYear]  = useState('')
+  const [saving, setSaving]   = useState(false)
 
-  // Hidrata o form com o que JÁ existe
   useEffect(() => {
     if (!open) return
     setName(myDoc?.name || profile.name || currentUser?.displayName || '')
     setPhoneIn(formatPhone(myDoc?.phone || profile.phone || ''))
-    setBirthdayIn(myDoc?.birthday || profile.birthday || '')
+    const bd = myDoc?.birthday || profile.birthday || ''
+    if (bd) {
+      const [y, m, d] = bd.split('-')
+      if (y) setBYear(y)
+      if (m) setBMonth(String(parseInt(m)))
+      if (d) setBDay(String(parseInt(d)))
+    }
   }, [open, myDoc, profile, currentUser])
 
   const phoneDigits = phoneIn.replace(/\D/g, '')
+
   const birthdayValid = (() => {
-    if (!birthdayIn) return false
-    const d = new Date(birthdayIn + 'T12:00:00')
-    return !isNaN(d.getTime()) && d < new Date() && d.getFullYear() > 1900
+    if (!bDay || !bMonth || !bYear) return false
+    const mm = String(bMonth).padStart(2, '0')
+    const dd = String(bDay).padStart(2, '0')
+    const d = new Date(`${bYear}-${mm}-${dd}T12:00:00`)
+    return !isNaN(d.getTime()) && d < new Date()
   })()
+
+  const computedBirthday = (bDay && bMonth && bYear)
+    ? `${bYear}-${String(bMonth).padStart(2,'0')}-${String(bDay).padStart(2,'0')}`
+    : ''
+
   const canSave =
     name.trim().length >= 2 &&
     phoneDigits.length >= 10 &&
@@ -63,7 +76,7 @@ export default function CompleteProfileModal() {
         name: name.trim(),
         phone: phoneDigits,
         email: currentUser?.email || profile.email || '',
-        birthday: birthdayIn,
+        birthday: computedBirthday,
       })
     } finally {
       setSaving(false)
@@ -140,16 +153,40 @@ export default function CompleteProfileModal() {
               <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(60,60,67,0.55)' }}>
                 Aniversário
               </span>
-              <div className="relative">
-                <Cake size={14} strokeWidth={1.75} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-label-3" />
-                <input
-                  type="date"
-                  value={birthdayIn}
-                  onChange={e => setBirthdayIn(e.target.value)}
-                  max={new Date().toISOString().split('T')[0]}
-                  className="w-full rounded-xl px-4 py-3 pl-9 text-[14px] focus:outline-none"
-                  style={{ border: '1px solid rgba(60,60,67,0.18)' }}
-                />
+              <div className="grid grid-cols-3 gap-2">
+                <select
+                  value={bDay}
+                  onChange={e => setBDay(e.target.value)}
+                  className="rounded-xl px-3 py-3 text-[14px] focus:outline-none bg-white"
+                  style={{ border: '1px solid rgba(60,60,67,0.18)', color: bDay ? '#1D1D1F' : 'rgba(60,60,67,0.35)' }}
+                >
+                  <option value="">Dia</option>
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+                <select
+                  value={bMonth}
+                  onChange={e => setBMonth(e.target.value)}
+                  className="rounded-xl px-3 py-3 text-[14px] focus:outline-none bg-white"
+                  style={{ border: '1px solid rgba(60,60,67,0.18)', color: bMonth ? '#1D1D1F' : 'rgba(60,60,67,0.35)' }}
+                >
+                  <option value="">Mês</option>
+                  {MESES.map((m, i) => (
+                    <option key={i} value={i + 1}>{m}</option>
+                  ))}
+                </select>
+                <select
+                  value={bYear}
+                  onChange={e => setBYear(e.target.value)}
+                  className="rounded-xl px-3 py-3 text-[14px] focus:outline-none bg-white"
+                  style={{ border: '1px solid rgba(60,60,67,0.18)', color: bYear ? '#1D1D1F' : 'rgba(60,60,67,0.35)' }}
+                >
+                  <option value="">Ano</option>
+                  {ANOS.map(a => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
               </div>
             </label>
           </div>

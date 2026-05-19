@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, Lock, User, Phone, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react'
 import { signIn, signUp, friendlyAuthError } from '../services/authService'
+import { useApp } from '../context/AppContext'
 import { themeConfig } from '../themeConfig'
 
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
 const ANOS  = Array.from({ length: 2026 - 1950 + 1 }, (_, i) => 2026 - i)
 
 export default function Login({ onNavigate, pageState }) {
+  const { setProfile } = useApp()
   const [mode,    setMode]    = useState('login') // 'login' | 'signup'
   const [name,    setName]    = useState('')
   const [email,   setEmail]   = useState('')
@@ -67,11 +69,10 @@ export default function Login({ onNavigate, pageState }) {
     try {
       if (isSignup) {
         await signUp(email.trim(), pass, name.trim(), phoneDigits, computedBirthday)
+        setProfile({ name: name.trim(), phone: phoneDigits, email: email.trim(), birthday: computedBirthday })
       } else {
         await signIn(email.trim(), pass)
       }
-      // O AppContext detecta o login via observeAuth e atualiza isAdmin.
-      // A gente redireciona pra rota original (ou home).
       onNavigate(redirectTo)
     } catch (err) {
       setError(friendlyAuthError(err))
