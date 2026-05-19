@@ -13,7 +13,7 @@ export const themeConfig = {
   // ─── IDENTIDADE ─────────────────────────────────────────────────
   appName:    'Studio Belle',
   tagline:    'Beauty & Wellness',
-  logoUrl:    null, // ex: '/logo.svg' — null usa o nome em texto
+  logoUrl:    '/icons/logo.png',
 
   // ─── PALETA ─────────────────────────────────────────────────────
   colors: {
