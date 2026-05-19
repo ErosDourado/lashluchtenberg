@@ -65,8 +65,12 @@ export function AppProvider({ children }) {
   const [reminderDays, setReminderDaysState] = useState(() => load('reminderDays', 15))
   const [cart,         setCart]         = useState(() => load('cart',   []))
 
-  const DEFAULT_WH = { start: '09:00', end: '18:00', lunchStart: '12:00', lunchEnd: '13:00', interval: 60 }
-  const [workingHours, setWorkingHoursState] = useState(() => load('workingHours', DEFAULT_WH))
+  const DEFAULT_WH = { start: '09:00', end: '18:00', lunchStart: '12:00', lunchEnd: '13:00', interval: 60, mode: 'auto', customSlots: [] }
+  const [workingHours, setWorkingHoursState] = useState(() => {
+    const saved = load('workingHours', DEFAULT_WH)
+    // backward-compat: fill new fields if missing
+    return { ...DEFAULT_WH, ...saved }
+  })
 
   // ── Mapa de imagens (IndexedDB — backward compat para idb: keys) ─
   const [imageMap, setImageMap] = useState({})
@@ -207,6 +211,9 @@ export function AppProvider({ children }) {
 
   // Gera lista de horários disponíveis
   const availableHours = useMemo(() => {
+    if (workingHours.mode === 'custom') {
+      return [...(workingHours.customSlots || [])].sort()
+    }
     const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + (m || 0) }
     const toStr = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
     const { start, end, lunchStart, lunchEnd, interval } = workingHours

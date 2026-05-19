@@ -52,6 +52,8 @@ const PAGES = {
 }
 
 const ADMIN_ONLY = new Set(['admin', 'finance'])
+// Abas principais — ficam sempre montadas, alternadas por visibilidade CSS
+const TAB_PAGES = ['home', 'scheduling', 'catalog']
 
 const iosTransition = {
   initial: { opacity: 0, y: 14, scale: 0.99 },
@@ -165,6 +167,7 @@ function AppRouter() {
     }
   }, [isAdmin, authLoading, firebaseOn, activePage])
 
+  const isTabPage = TAB_PAGES.includes(activePage)
   const Page = PAGES[activePage] ?? Home
   const showChrome = !ADMIN_ONLY.has(activePage) && activePage !== 'login'
 
@@ -183,22 +186,46 @@ function AppRouter() {
       >
         {showChrome && <TopBar onNavigate={navigate} />}
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+        <main className="flex-1 relative overflow-hidden">
+          {/* Abas principais — sempre montadas, alternadas por visibilidade para troca instantânea */}
+          {TAB_PAGES.map(id => {
+            const P = PAGES[id]
+            const visible = showChrome && activePage === id
+            return (
+              <div
+                key={id}
+                className="absolute inset-0 overflow-y-auto overflow-x-hidden pb-32"
+                style={{ visibility: visible ? 'visible' : 'hidden' }}
+              >
+                <ErrorBoundary key={id} onNavigate={navigate}>
+                  <P onNavigate={navigate} pageState={activePage === id ? pageState : null} />
+                </ErrorBoundary>
+              </div>
+            )
+          })}
+
+          {/* Páginas não-aba (profile, login, admin, finance) — montagem/desmontagem com animação */}
           <AnimatePresence>
-            <motion.div
-              key={activePage}
-              variants={iosTransition}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className={showChrome ? 'pb-32' : ''}
-            >
-              <ErrorBoundary key={activePage} onNavigate={navigate}>
-                <Suspense fallback={<PageLoader />}>
-                  <Page onNavigate={navigate} pageState={pageState} />
-                </Suspense>
-              </ErrorBoundary>
-            </motion.div>
+            {(!isTabPage || !showChrome) && (
+              <motion.div
+                key={activePage}
+                variants={iosTransition}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="absolute inset-0 overflow-y-auto overflow-x-hidden"
+                style={{
+                  paddingBottom: showChrome ? '8rem' : 0,
+                  backgroundColor: brandConfig.colors.background,
+                }}
+              >
+                <ErrorBoundary key={activePage} onNavigate={navigate}>
+                  <Suspense fallback={<PageLoader />}>
+                    <Page onNavigate={navigate} pageState={pageState} />
+                  </Suspense>
+                </ErrorBoundary>
+              </motion.div>
+            )}
           </AnimatePresence>
         </main>
 

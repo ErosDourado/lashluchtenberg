@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Plus, Trash2, CalendarOff, Clock, ChevronRight, BellRing } from 'lucide-react'
+import { Plus, Trash2, CalendarOff, Clock, ChevronRight, BellRing, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../../context/AppContext'
 import MiniCalendar from '../../components/MiniCalendar'
@@ -7,7 +7,25 @@ import MiniCalendar from '../../components/MiniCalendar'
 // ── Seção de horários de trabalho ──────────────────────────────────
 function WorkingHoursConfig({ workingHours, setWorkingHours, availableHours }) {
   const [open, setOpen] = useState(false)
+  const [newSlot, setNewSlot] = useState('08:00')
   const upd = (k, v) => setWorkingHours({ [k]: v })
+
+  const isCustom = workingHours.mode === 'custom'
+  const customSlots = workingHours.customSlots || []
+
+  const addCustomSlot = () => {
+    if (!newSlot) return
+    if (customSlots.includes(newSlot)) return
+    setWorkingHours({ customSlots: [...customSlots, newSlot].sort() })
+  }
+
+  const removeCustomSlot = (h) => {
+    setWorkingHours({ customSlots: customSlots.filter(s => s !== h) })
+  }
+
+  const subtitle = isCustom
+    ? `${customSlots.length} horário${customSlots.length !== 1 ? 's' : ''} definido${customSlots.length !== 1 ? 's' : ''} manualmente`
+    : `${workingHours.start} – ${workingHours.end} · pausa ${workingHours.lunchStart}–${workingHours.lunchEnd}`
 
   return (
     <div className="ios-section mb-5">
@@ -23,9 +41,7 @@ function WorkingHoursConfig({ workingHours, setWorkingHours, availableHours }) {
           </div>
           <div>
             <p className="text-[15px] font-medium text-label">Horário de atendimento</p>
-            <p className="text-[12px] text-label-2">
-              {workingHours.start} – {workingHours.end} · pausa {workingHours.lunchStart}–{workingHours.lunchEnd}
-            </p>
+            <p className="text-[12px] text-label-2">{subtitle}</p>
           </div>
         </div>
         <motion.div animate={{ rotate: open ? 90 : 0 }} transition={{ duration: 0.2 }}>
@@ -42,52 +58,136 @@ function WorkingHoursConfig({ workingHours, setWorkingHours, availableHours }) {
             transition={{ duration: 0.22 }}
             style={{ overflow: 'hidden' }}
           >
-            <div className="px-4 pt-4 pb-5 flex flex-col gap-3">
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { k: 'start',      l: 'Início' },
-                  { k: 'end',        l: 'Término' },
-                  { k: 'lunchStart', l: 'Pausa — início' },
-                  { k: 'lunchEnd',   l: 'Pausa — fim' },
-                ].map(({ k, l }) => (
-                  <label key={k} className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-label-2">{l}</span>
-                    <input
-                      type="time"
-                      value={workingHours[k]}
-                      onChange={e => upd(k, e.target.value)}
-                      className="ios-input text-[14px]"
-                    />
-                  </label>
-                ))}
-              </div>
+            <div className="px-4 pt-4 pb-5 flex flex-col gap-4">
 
-              <label className="flex flex-col gap-1">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-label-2">Intervalo entre horários</span>
-                <select
-                  value={workingHours.interval}
-                  onChange={e => upd('interval', Number(e.target.value))}
-                  className="ios-input"
-                >
-                  <option value={30}>30 minutos</option>
-                  <option value={60}>1 hora</option>
-                </select>
-              </label>
-
-              {/* Preview dos horários gerados */}
+              {/* Modo: Automático vs Manual */}
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-widest text-label-2 mb-2">
-                  Horários gerados ({availableHours.length})
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {availableHours.map(h => (
-                    <span key={h} className="text-[11px] font-semibold px-2 py-1 rounded-lg"
-                      style={{ background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)' }}>
-                      {h}
-                    </span>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-label-2 mb-2">Modo</p>
+                <div className="flex rounded-xl overflow-hidden border"
+                  style={{ borderColor: 'rgba(60,60,67,0.15)' }}>
+                  {[
+                    { v: 'auto',   l: 'Automático' },
+                    { v: 'custom', l: 'Manual' },
+                  ].map(({ v, l }) => (
+                    <button
+                      key={v}
+                      onClick={() => upd('mode', v)}
+                      className="flex-1 py-2 text-[13px] font-semibold transition-all duration-200"
+                      style={{
+                        background: workingHours.mode === v ? 'var(--color-accent)' : 'var(--color-surface)',
+                        color: workingHours.mode === v ? '#fff' : 'var(--color-label-2)',
+                      }}
+                    >
+                      {l}
+                    </button>
                   ))}
                 </div>
               </div>
+
+              {/* Automático */}
+              {!isCustom && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { k: 'start',      l: 'Início' },
+                      { k: 'end',        l: 'Término' },
+                      { k: 'lunchStart', l: 'Pausa — início' },
+                      { k: 'lunchEnd',   l: 'Pausa — fim' },
+                    ].map(({ k, l }) => (
+                      <label key={k} className="flex flex-col gap-1">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-label-2">{l}</span>
+                        <input
+                          type="time"
+                          value={workingHours[k]}
+                          onChange={e => upd(k, e.target.value)}
+                          className="ios-input text-[14px]"
+                        />
+                      </label>
+                    ))}
+                  </div>
+
+                  <label className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-label-2">Intervalo entre horários</span>
+                    <select
+                      value={workingHours.interval}
+                      onChange={e => upd('interval', Number(e.target.value))}
+                      className="ios-input"
+                    >
+                      <option value={30}>30 minutos</option>
+                      <option value={60}>1 hora</option>
+                    </select>
+                  </label>
+
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-label-2 mb-2">
+                      Horários gerados ({availableHours.length})
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {availableHours.map(h => (
+                        <span key={h} className="text-[11px] font-semibold px-2 py-1 rounded-lg"
+                          style={{ background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)' }}>
+                          {h}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Manual */}
+              {isCustom && (
+                <>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-label-2 mb-2">Adicionar horário</p>
+                    <div className="flex gap-2">
+                      <input
+                        type="time"
+                        value={newSlot}
+                        onChange={e => setNewSlot(e.target.value)}
+                        className="ios-input flex-1 text-[14px]"
+                      />
+                      <motion.button
+                        whileTap={{ scale: 0.92 }}
+                        onClick={addCustomSlot}
+                        className="px-4 py-2 rounded-xl text-[13px] font-semibold flex items-center gap-1.5"
+                        style={{ background: 'var(--color-accent)', color: '#fff' }}
+                      >
+                        <Plus size={14} strokeWidth={2} />
+                        Adicionar
+                      </motion.button>
+                    </div>
+                  </div>
+
+                  {customSlots.length === 0 ? (
+                    <p className="text-[12px] text-label-3 text-center py-2">
+                      Nenhum horário adicionado ainda.
+                    </p>
+                  ) : (
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-label-2 mb-2">
+                        Horários disponíveis ({customSlots.length})
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {customSlots.map(h => (
+                          <div key={h} className="flex items-center gap-1 px-3 py-1.5 rounded-xl"
+                            style={{ background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)' }}>
+                            <span className="text-[13px] font-semibold" style={{ color: 'var(--color-accent)' }}>{h}</span>
+                            <motion.button
+                              whileTap={{ scale: 0.85 }}
+                              onClick={() => removeCustomSlot(h)}
+                              className="ml-1 flex items-center justify-center"
+                              style={{ color: 'var(--color-accent)' }}
+                            >
+                              <X size={12} strokeWidth={2.5} />
+                            </motion.button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
             </div>
           </motion.div>
         )}
